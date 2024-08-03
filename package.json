@@ -1,0 +1,28 @@
+{
+  "name": "vanilla-typescript",
+  "version": "1.0.0",
+  "description": "JavaScript and TypeScript example starter project",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "konva": "^9.3.14",
+    "pinia": "^2.2.0",
+    "vue": "^3.4.35"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.1",
+    "sass": "^1.77.8",
+    "typescript": "4.4.4",
+    "vite": "^4.4.5",
+    "vue-tsc": "^2.0.29"
+  },
+  "resolutions": {
+    "@babel/preset-env": "7.13.8"
+  },
+  "keywords": [
+    "typescript",
+    "javascript"
+  ]
+}
