@@ -20,7 +20,7 @@ export class CommandManager {
   redo() {
     const command = this._redoStack.pop();
 
-    if (command) {
+    if (command) {      
       command.execute();
       this._undoStack.push(command);
     }

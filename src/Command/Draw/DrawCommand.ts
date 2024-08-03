@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { Command } from "./Command";
+import { Command } from "../Command";
 
 export class DrawCommand<T extends Konva.Shape> extends Command {
   private _layer: Konva.Layer;
@@ -12,13 +12,13 @@ export class DrawCommand<T extends Konva.Shape> extends Command {
     this._shape = shape;
   }
 
-  execute() {
-    this._layer.add(this._shape);
+  undo() {
+    this._shape.remove();
     this._layer.batchDraw();
   }
 
-  undo() {
-    this._shape.remove();
+  execute() {
+    this._layer.add(this._shape);
     this._layer.batchDraw();
   }
 }

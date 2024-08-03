@@ -14,17 +14,15 @@
 import Konva from "konva";
 import { onMounted, ref } from "vue";
 import {
-  CircleStrategy,
   LineStrategy,
-  RectStrategy,
   ShapeContext,
   EraserStrategy,
   MaskingStrategy,
 } from "./ShapeStrategy";
-import { CommandManager } from "./CommandManager";
-import { Command } from "./Command";
-import { DrawCommand } from "./DrawCommand";
+import { CommandManager } from "./Command/CommandManager";
+import { DrawCommand } from "./Command/Draw/DrawCommand";
 import { MaskingCanvas } from "./MaskingCanvas";
+import { BringToFrontCommand } from "./Command/Arrange/BringToFrontCommand";
 
 const size = window.innerWidth;
 const canvas = ref<MaskingCanvas>();
@@ -112,9 +110,9 @@ onMounted(async () => {
     const pos = stage.getPointerPosition();
     if (pos) {
       if (currentLayer.value) {
-        console.log(currentLayer);
         currentShape = shapeContext.value.createShape(pos);
         currentLayer.value.add(currentShape);
+        currentLayer.value?.batchDraw();
         currentShape.moveDown();
       }
     }
@@ -136,9 +134,11 @@ onMounted(async () => {
   stage.on("mouseup", () => {
     if (!isDrawing || !currentShape) return;
     isDrawing = false;
-    commandManager.executeCommand(
-      new DrawCommand<Konva.Shape>(topMaskLayer, currentShape)
-    );
+    if (currentLayer.value) {
+      commandManager.executeCommand(
+        new DrawCommand<Konva.Shape>(currentLayer.value, currentShape)
+      );
+    }
     currentShape = null;
   });
 
@@ -150,37 +150,38 @@ onMounted(async () => {
 
 const bottomLayerUp = () => {
   const layer = canvas.value?.getLayer("bottomMask");
-  if (layer) {
-    console.log("bottomMask", layer);
-    layer.moveToTop();
+  if (layer && currentLayer.value !== layer) {
+    const command = new BringToFrontCommand(layer);
+    command.execute();
+    commandManager.executeCommand(command);
     currentLayer.value = layer;
   }
 };
 const topLayerUp = () => {
   const layer = canvas.value?.getLayer("topMask");
-  if (layer) {
-    console.log("topMask", layer);
-    layer.moveToTop();
+  if (layer && currentLayer.value !== layer) {
+    const command = new BringToFrontCommand(layer);
+    command.execute();
+    commandManager.executeCommand(command);
     currentLayer.value = layer;
   }
 };
 const selectMaskingStrategy = () => {
   shapeContext.value.setStrategy(new MaskingStrategy());
 };
-
 const selectEraserStrategy = () => {
   shapeContext.value.setStrategy(new EraserStrategy());
 };
 const redo = () => {
   commandManager.redo();
 };
-
 const undo = () => {
   commandManager.undo();
 };
 </script>
 
 <style lang="scss" scoped>
+
 #canvas {
   width: 100vw;
   height: 100vh;
