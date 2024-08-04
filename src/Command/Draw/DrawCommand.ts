@@ -14,11 +14,13 @@ export class DrawCommand<T extends Konva.Shape> extends Command {
 
   undo() {
     this._shape.remove();
+    console.log(this._layer.getChildren());
     this._layer.batchDraw();
   }
 
   execute() {
     this._layer.add(this._shape);
+    console.log(this._layer.getChildren());
     this._layer.batchDraw();
   }
 }

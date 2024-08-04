@@ -23,6 +23,8 @@ import { CommandManager } from "./Command/CommandManager";
 import { DrawCommand } from "./Command/Draw/DrawCommand";
 import { MaskingCanvas } from "./MaskingCanvas";
 import { BringToFrontCommand } from "./Command/Arrange/BringToFrontCommand";
+import { GroupCommand } from "./Command/GroupCommand";
+import { SendBackwardCommand } from "./Command/Arrange/SendBackwardCommand";
 
 const size = window.innerWidth;
 const canvas = ref<MaskingCanvas>();
@@ -123,9 +125,7 @@ onMounted(async () => {
 
     const pos = stage.getPointerPosition();
     if (pos && currentShape instanceof Konva.Line) {
-      const newPoints = (currentShape as Konva.Line)
-        .points()
-        .concat([pos.x, pos.y]);
+      const newPoints = (currentShape as Konva.Line).points().concat([pos.x, pos.y]);
       (currentShape as Konva.Line).points(newPoints);
       currentLayer.value?.batchDraw();
     }
@@ -135,9 +135,10 @@ onMounted(async () => {
     if (!isDrawing || !currentShape) return;
     isDrawing = false;
     if (currentLayer.value) {
-      commandManager.executeCommand(
-        new DrawCommand<Konva.Shape>(currentLayer.value, currentShape)
-      );
+      const groupCommand = new GroupCommand();
+      groupCommand.add(new DrawCommand<Konva.Shape>(currentLayer.value, currentShape));
+      groupCommand.add(new SendBackwardCommand(currentShape));
+      commandManager.executeCommand(groupCommand);
     }
     currentShape = null;
   });
@@ -152,7 +153,6 @@ const bottomLayerUp = () => {
   const layer = canvas.value?.getLayer("bottomMask");
   if (layer && currentLayer.value !== layer) {
     const command = new BringToFrontCommand(layer);
-    command.execute();
     commandManager.executeCommand(command);
     currentLayer.value = layer;
   }
@@ -161,7 +161,6 @@ const topLayerUp = () => {
   const layer = canvas.value?.getLayer("topMask");
   if (layer && currentLayer.value !== layer) {
     const command = new BringToFrontCommand(layer);
-    command.execute();
     commandManager.executeCommand(command);
     currentLayer.value = layer;
   }

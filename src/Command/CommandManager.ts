@@ -5,6 +5,7 @@ export class CommandManager {
   private _redoStack: Command[] = [];
 
   executeCommand(command: Command) {
+    command.execute();
     this._undoStack.push(command);
     this._redoStack = [];
   }
